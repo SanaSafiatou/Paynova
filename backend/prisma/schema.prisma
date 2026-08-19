@@ -15,11 +15,421 @@ enum Role {
   SUPER_ADMIN
 }
 
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  PAYMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+  REPORTED
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+enum NotificationType {
+  TRANSACTION
+  SYSTEM
+  ALERT
+  COMMISSION
+}
+
+enum AccountStatus {
+  ACTIVE
+  SUSPENDED
+  PENDING_VALIDATION
+}
+
+enum WithdrawalStatus {
+  EN_ATTENTE
+  APPROUVE
+  REFUSE
+  TERMINE
+}
+
+enum RefundStatus {
+  PENDING
+  APPROVED
+  REFUSED
+  COMPLETED
+}
+
+enum AuditAction {
+  USER_SUSPEND
+  USER_REACTIVATE
+  USER_VIEW
+  AGENT_VALIDATE
+  AGENT_SUSPEND
+  AGENT_REACTIVATE
+  MERCHANT_VALIDATE
+  MERCHANT_SUSPEND
+  MERCHANT_REACTIVATE
+  WITHDRAWAL_APPROVE
+  WITHDRAWAL_REFUSE
+  WITHDRAWAL_COMPLETE
+  TRANSACTION_VIEW
+  TRANSACTION_FLAG
+  REPORT_REVIEW
+  REPORT_RESOLVE
+  REPORT_DISMISS
+  SETTINGS_UPDATE
+  COMMISSION_RULE_CREATE
+  COMMISSION_RULE_UPDATE
+  COMMISSION_RULE_DELETE
+  ADMIN_CREATE
+  ADMIN_UPDATE
+  ADMIN_SUSPEND
+  ADMIN_REACTIVATE
+  API_KEY_CREATE
+  API_KEY_REVOKE
+  DOCUMENT_UPLOAD
+  DOCUMENT_DELETE
+  SECURITY_LOGIN
+  SECURITY_LOGOUT
+  SECURITY_BLOCK
+  SECURITY_SESSION_REVOKE
+  REFUND_REQUEST
+  REFUND_APPROVE
+  REFUND_REFUSE
+  REFUND_EXECUTE
+}
+
 model User {
+  id              String        @id @default(uuid())
+  phone           String        @unique
+  name            String?
+  dateOfBirth     DateTime?
+  role            Role          @default(CLIENT)
+  phoneVerified   Boolean       @default(false)
+  profileComplete Boolean       @default(false)
+  accountValidated Boolean      @default(false)
+  pinHash         String?
+  pinAttempts     Int           @default(0)
+  pinLockedUntil  DateTime?
+  balance         Decimal       @default(0) @db.Decimal(15, 2)
+  status          AccountStatus @default(ACTIVE)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  clientTransactions    Transaction[]    @relation("ClientTransactions")
+  agentTransactions     Transaction[]    @relation("AgentTransactions")
+  merchantTransactions  Transaction[]    @relation("MerchantTransactions")
+  commissions           Commission[]
+  notifications         Notification[]
+  suspiciousReports     SuspiciousReport[]
+  devices               Device[]
+  agentProfile          AgentProfile?
+  merchantProfile       MerchantProfile?
+  auditActions          AuditLog[]       @relation("AuditActor")
+  documents             Document[]
+  sessions              AdminSession[]
+  withdrawalRequests    WithdrawalRequest[]
+  refundAdminActions    Refund[]          @relation("RefundAdmin")
+  refundDebits          Refund[]          @relation("RefundDebit")
+  refundCredits         Refund[]          @relation("RefundCredit")
+}
+
+model Transaction {
+  id          String            @id @default(uuid())
+  type        TransactionType
+  amount      Decimal           @db.Decimal(15, 2)
+  fees        Decimal           @default(0) @db.Decimal(15, 2)
+  commission  Decimal           @default(0) @db.Decimal(15, 2)
+  netAmount   Decimal           @db.Decimal(15, 2)
+  status      TransactionStatus @default(PENDING)
+  description String?
+  clientId    String?
+  agentId     String?
+  merchantId  String?
+  reference   String?           @unique
+  flagged     Boolean           @default(false)
+  flagReason  String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  client            User?              @relation("ClientTransactions", fields: [clientId], references: [id])
+  agent             User?              @relation("AgentTransactions", fields: [agentId], references: [id])
+  merchant          User?              @relation("MerchantTransactions", fields: [merchantId], references: [id])
+  commissionRecord  Commission?
+  reports           SuspiciousReport[]
+  refunds           Refund[]
+}
+
+model CommissionRule {
+  id          String          @id @default(uuid())
+  type        TransactionType
+  minAmount   Decimal         @db.Decimal(15, 2)
+  maxAmount   Decimal         @db.Decimal(15, 2)
+  rate        Decimal         @db.Decimal(5, 4)
+  fixedAmount Decimal         @default(0) @db.Decimal(15, 2)
+  isActive    Boolean         @default(true)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+}
+
+model Commission {
   id            String   @id @default(uuid())
-  phone         String   @unique
-  role          Role     @default(CLIENT)
-  phoneVerified Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  agentId       String
+  transactionId String   @unique
+  amount        Decimal  @db.Decimal(15, 2)
+  calculatedAt  DateTime @default(now())
+
+  agent       User        @relation(fields: [agentId], references: [id])
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  title     String
+  body      String
+  type      NotificationType @default(SYSTEM)
+  read      Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model SuspiciousReport {
+  id            String       @id @default(uuid())
+  agentId       String
+  transactionId String
+  reason        String
+  description   String?
+  status        ReportStatus @default(PENDING)
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  createdAt     DateTime     @default(now())
+
+  agent       User        @relation(fields: [agentId], references: [id])
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+}
+
+model Device {
+  id         String   @id @default(uuid())
+  userId     String
+  deviceId   String
+  deviceName String?
+  lastUsedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, deviceId])
+}
+
+model AgentProfile {
+  id              String   @id @default(uuid())
+  userId          String   @unique
+  validated       Boolean  @default(false)
+  validatedBy     String?
+  validatedAt     DateTime?
+  trainingComplete Boolean @default(false)
+  documentsJson   Json?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model MerchantProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  businessName   String
+  businessType   String?
+  businessAddress String?
+  validated      Boolean  @default(false)
+  validatedBy    String?
+  validatedAt    DateTime?
+  merchantCode   String?  @unique
+  qrData         String?  @unique
+  balance        Decimal  @default(0) @db.Decimal(15, 2)
+  documentsJson  Json?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model WithdrawalRequest {
+  id          String           @id @default(uuid())
+  merchantId  String
+  amount      Decimal          @db.Decimal(15, 2)
+  status      WithdrawalStatus @default(EN_ATTENTE)
+  note        String?
+  processedBy String?
+  processedAt DateTime?
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  merchant User @relation(fields: [merchantId], references: [id])
+}
+
+model AuditLog {
+  id        String      @id @default(uuid())
+  actorId   String
+  action    AuditAction
+  targetId  String?
+  targetType String?
+  details   Json?
+  ip        String?
+  createdAt DateTime    @default(now())
+
+  actor User @relation("AuditActor", fields: [actorId], references: [id])
+}
+
+model AppSetting {
+  id    String @id @default(uuid())
+  key   String @unique
+  value Json
+  updatedAt DateTime @updatedAt
+}
+
+model ApiConfig {
+  id          String          @id @default(uuid())
+  name        String
+  keyHash     String          @unique
+  keyPrefix   String
+  permissions Json
+  isActive    Boolean         @default(true)
+  rateLimit   Int             @default(60)
+  expiresAt   DateTime?
+  lastUsedAt  DateTime?
+  createdBy   String
+  revokedAt   DateTime?
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  accessLogs  ApiAccessLog[]
+}
+
+model ApiAccessLog {
+  id         String   @id @default(uuid())
+  configId   String
+  endpoint   String
+  method     String
+  statusCode Int
+  ip         String?
+  userAgent  String?
+  latencyMs  Int?
+  createdAt  DateTime @default(now())
+
+  config ApiConfig @relation(fields: [configId], references: [id])
+}
+
+model WebhookConfig {
+  id        String        @id @default(uuid())
+  url       String
+  events    Json
+  secret    String
+  isActive  Boolean       @default(true)
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  logs      WebhookLog[]
+}
+
+model WebhookLog {
+  id         String   @id @default(uuid())
+  configId   String
+  event      String
+  payload    Json
+  statusCode Int?
+  response   String?
+  success    Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  config WebhookConfig @relation(fields: [configId], references: [id])
+}
+
+model ExternalServiceConfig {
+  id        String  @id @default(uuid())
+  service   String  @unique
+  config    Json
+  isActive  Boolean @default(true)
+  updatedAt DateTime @updatedAt
+}
+
+model ScheduledJob {
+  id         String    @id @default(uuid())
+  name       String
+  cronExpr   String
+  isActive   Boolean   @default(true)
+  lastRunAt  DateTime?
+  nextRunAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Document {
+  id          String   @id @default(uuid())
+  userId      String
+  fileName    String
+  fileType    String
+  fileSize    Int
+  filePath    String
+  uploadedBy  String
+  description String?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model SecurityEvent {
+  id        String   @id @default(uuid())
+  userId    String?
+  eventType String
+  ip        String?
+  userAgent String?
+  details   Json?
+  severity  String   @default("INFO")
+  createdAt DateTime @default(now())
+}
+
+model AdminSession {
+  id         String   @id @default(uuid())
+  userId     String
+  tokenHash  String
+  ip         String?
+  userAgent  String?
+  lastActiveAt DateTime @default(now())
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+}
+
+model Refund {
+  id                  String       @id @default(uuid())
+  transactionId       String
+  originalAmount      Decimal      @db.Decimal(15, 2)
+  originalFees        Decimal      @default(0) @db.Decimal(15, 2)
+  refundAmount        Decimal      @db.Decimal(15, 2)
+  reason              String
+  status              RefundStatus @default(PENDING)
+  debitUserId         String?
+  creditUserId        String?
+  adminId             String
+  refundReference     String       @unique
+  originalReference   String?
+  note                String?
+  executedAt          DateTime?
+  createdAt           DateTime     @default(now())
+  updatedAt           DateTime     @updatedAt
+
+  transaction Transaction @relation(fields: [transactionId], references: [id])
+  admin       User        @relation("RefundAdmin", fields: [adminId], references: [id])
+  debitUser   User?       @relation("RefundDebit", fields: [debitUserId], references: [id])
+  creditUser  User?       @relation("RefundCredit", fields: [creditUserId], references: [id])
 }

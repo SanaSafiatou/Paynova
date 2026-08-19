@@ -7,7 +7,10 @@ export class RedisService implements OnModuleDestroy {
   private readonly OTP_TTL = 300;
 
   constructor() {
-    this.client = new Redis(process.env.REDIS_URL || 'redis://localhost:6379');
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    this.client = new Redis(redisUrl, {
+      tls: redisUrl.startsWith('rediss://') ? {} : undefined,
+    });
   }
 
   async setOtp(phone: string, code: string): Promise<void> {
