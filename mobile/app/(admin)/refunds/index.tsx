@@ -134,7 +134,7 @@ export default function AdminRefunds() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.text} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.title}>Remboursements</Text>
         <TouchableOpacity
@@ -210,7 +210,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 56, paddingBottom: 12,
     backgroundColor: Colors.white,
   },
-  title: { fontSize: 18, fontWeight: '700', color: Colors.text },
+  title: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   addButton: {
     width: 36, height: 36, borderRadius: 18, backgroundColor: Colors.primary,
     justifyContent: 'center', alignItems: 'center',
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     borderRadius: 12, paddingHorizontal: 12, marginHorizontal: 16, marginTop: 12,
     height: 42,
   },
-  searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: Colors.text },
+  searchInput: { flex: 1, marginLeft: 8, fontSize: 14, color: Colors.textPrimary },
   filterRow: { paddingHorizontal: 16, paddingTop: 8 },
   filterChip: {
     paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16,

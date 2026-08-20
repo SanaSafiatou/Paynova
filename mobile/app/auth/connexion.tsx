@@ -49,6 +49,10 @@ export default function ConnexionScreen() {
     setLoading(false);
 
     if (result.error || !result.data) {
+      if (result.error && result.error.includes('Aucun code PIN')) {
+        router.push({ pathname: '/auth/set-pin', params: { phone: fullPhone } });
+        return;
+      }
       Alert.alert('Erreur', result.error || 'Numéro ou code PIN incorrect');
       return;
     }

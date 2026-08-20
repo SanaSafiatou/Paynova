@@ -78,4 +78,10 @@ export class AuthController {
   changePin(@Body() dto: ChangePinDto) {
     return this.authService.changePin(dto);
   }
+
+  @Post('verify-pin')
+  @HttpCode(HttpStatus.OK)
+  verifyPin(@Body() dto: VerifyPinDto) {
+    return this.authService.verifyPin(dto);
+  }
 }

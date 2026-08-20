@@ -41,6 +41,10 @@ export default function LoginScreen() {
     setLoading(false);
 
     if (result.error || !result.data) {
+      if (result.error && result.error.includes('Aucun code PIN')) {
+        router.push({ pathname: '/auth/set-pin', params: { phone: phone! } });
+        return;
+      }
       Alert.alert('Erreur', result.error || 'Connexion échouée');
       return;
     }

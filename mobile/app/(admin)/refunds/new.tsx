@@ -79,7 +79,7 @@ export default function NewRefundScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.text} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.title}>Nouveau remboursement</Text>
         <View style={{ width: 24 }} />
@@ -287,19 +287,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 56, paddingBottom: 12,
     backgroundColor: Colors.white,
   },
-  title: { fontSize: 18, fontWeight: '700', color: Colors.text },
+  title: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: 16, paddingBottom: 40 },
   section: {
     backgroundColor: Colors.white, borderRadius: 12, padding: 14,
     marginBottom: 12, borderWidth: 1, borderColor: Colors.border,
   },
   sectionTitle: {
-    fontSize: 14, fontWeight: '700', color: Colors.text, marginBottom: 10,
+    fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginBottom: 10,
   },
   searchRow: { flexDirection: 'row', gap: 8 },
   searchInput: {
     flex: 1, height: 42, borderRadius: 10, borderWidth: 1, borderColor: Colors.border,
-    paddingHorizontal: 12, fontSize: 14, color: Colors.text, backgroundColor: Colors.background,
+    paddingHorizontal: 12, fontSize: 14, color: Colors.textPrimary, backgroundColor: Colors.background,
   },
   searchBtn: {
     width: 42, height: 42, borderRadius: 10, backgroundColor: Colors.primary,
@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
   },
   resultInfo: { flex: 1 },
   resultRef: { fontSize: 12, fontWeight: '700', color: Colors.primary },
-  resultDetail: { fontSize: 11, color: Colors.text, marginTop: 2 },
+  resultDetail: { fontSize: 11, color: Colors.textPrimary, marginTop: 2 },
   resultUser: { fontSize: 10, color: Colors.textMuted, marginTop: 2 },
   selectedTx: {
     backgroundColor: '#F0F9FF', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#BAE6FD',
@@ -320,9 +320,9 @@ const styles = StyleSheet.create({
   selectedTxHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6,
   },
-  selectedTxRef: { fontSize: 13, fontWeight: '700', color: Colors.text },
+  selectedTxRef: { fontSize: 13, fontWeight: '700', color: Colors.textPrimary },
   selectedTxDetail: { fontSize: 12, color: Colors.textSecondary, marginTop: 2 },
-  fieldLabel: { fontSize: 12, fontWeight: '600', color: Colors.text, marginBottom: 6 },
+  fieldLabel: { fontSize: 12, fontWeight: '600', color: Colors.textPrimary, marginBottom: 6 },
   accountOptions: { gap: 6 },
   accountOption: {
     flexDirection: 'row', alignItems: 'center', gap: 8, padding: 10, borderRadius: 8,
@@ -331,11 +331,11 @@ const styles = StyleSheet.create({
   accountOptionActive: {
     borderColor: Colors.primary, backgroundColor: '#F5F3FF',
   },
-  accountOptionName: { fontSize: 13, fontWeight: '600', color: Colors.text },
+  accountOptionName: { fontSize: 13, fontWeight: '600', color: Colors.textPrimary },
   accountOptionDetail: { fontSize: 10, color: Colors.textMuted },
   input: {
     height: 42, borderRadius: 10, borderWidth: 1, borderColor: Colors.border,
-    paddingHorizontal: 12, fontSize: 14, color: Colors.text, backgroundColor: Colors.background,
+    paddingHorizontal: 12, fontSize: 14, color: Colors.textPrimary, backgroundColor: Colors.background,
   },
   feeInfo: { fontSize: 11, color: Colors.textMuted, marginTop: 6, fontStyle: 'italic' },
   submitBtn: {

@@ -118,7 +118,7 @@ export default function RefundDetailScreen() {
     <View style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => router.back()}>
-          <Ionicons name="arrow-back" size={24} color={Colors.text} />
+          <Ionicons name="arrow-back" size={24} color={Colors.textPrimary} />
         </TouchableOpacity>
         <Text style={styles.title}>Détail remboursement</Text>
         <View style={{ width: 24 }} />
@@ -274,7 +274,7 @@ const infoStyles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'center', paddingVertical: 6, gap: 8,
   },
   label: { fontSize: 12, color: Colors.textMuted, width: 90 },
-  value: { fontSize: 13, color: Colors.text, fontWeight: '500', flex: 1 },
+  value: { fontSize: 13, color: Colors.textPrimary, fontWeight: '500', flex: 1 },
 });
 
 const styles = StyleSheet.create({
@@ -285,7 +285,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16, paddingTop: 56, paddingBottom: 12,
     backgroundColor: Colors.white,
   },
-  title: { fontSize: 18, fontWeight: '700', color: Colors.text },
+  title: { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   content: { padding: 16, paddingBottom: 40 },
   statusBanner: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     marginBottom: 12, borderWidth: 1, borderColor: Colors.border,
   },
   sectionTitle: {
-    fontSize: 14, fontWeight: '700', color: Colors.text, marginBottom: 10,
+    fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginBottom: 10,
     borderBottomWidth: 1, borderBottomColor: Colors.border, paddingBottom: 6,
   },
   accountsRow: {
@@ -309,12 +309,12 @@ const styles = StyleSheet.create({
   debitCard: { backgroundColor: '#FEF2F2' },
   creditCard: { backgroundColor: '#F0FDF4' },
   accountLabel: { fontSize: 10, color: Colors.textMuted, fontWeight: '600' },
-  accountName: { fontSize: 12, fontWeight: '700', color: Colors.text, textAlign: 'center' },
+  accountName: { fontSize: 12, fontWeight: '700', color: Colors.textPrimary, textAlign: 'center' },
   accountBalance: { fontSize: 10, color: Colors.textSecondary },
   feesRow: { flexDirection: 'row', gap: 12 },
   feeItem: { flex: 1, backgroundColor: Colors.background, borderRadius: 8, padding: 10, alignItems: 'center' },
   feeLabel: { fontSize: 10, color: Colors.textMuted },
-  feeValue: { fontSize: 14, fontWeight: '700', color: Colors.text, marginTop: 4 },
+  feeValue: { fontSize: 14, fontWeight: '700', color: Colors.textPrimary, marginTop: 4 },
   actions: {
     flexDirection: 'row', gap: 12, marginTop: 16,
   },

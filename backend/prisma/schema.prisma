@@ -124,6 +124,8 @@ model User {
   clientTransactions    Transaction[]    @relation("ClientTransactions")
   agentTransactions     Transaction[]    @relation("AgentTransactions")
   merchantTransactions  Transaction[]    @relation("MerchantTransactions")
+  sentTransfers         Transaction[]    @relation("SenderTransactions")
+  receivedTransfers     Transaction[]    @relation("RecipientTransactions")
   commissions           Commission[]
   notifications         Notification[]
   suspiciousReports     SuspiciousReport[]
@@ -151,6 +153,8 @@ model Transaction {
   clientId    String?
   agentId     String?
   merchantId  String?
+  senderId    String?
+  recipientId String?
   reference   String?           @unique
   flagged     Boolean           @default(false)
   flagReason  String?
@@ -160,6 +164,8 @@ model Transaction {
   client            User?              @relation("ClientTransactions", fields: [clientId], references: [id])
   agent             User?              @relation("AgentTransactions", fields: [agentId], references: [id])
   merchant          User?              @relation("MerchantTransactions", fields: [merchantId], references: [id])
+  sender            User?              @relation("SenderTransactions", fields: [senderId], references: [id])
+  recipient         User?              @relation("RecipientTransactions", fields: [recipientId], references: [id])
   commissionRecord  Commission?
   reports           SuspiciousReport[]
   refunds           Refund[]

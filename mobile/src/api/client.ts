@@ -17,6 +17,7 @@ async function request<T>(
 
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
+      'bypass-tunnel-reminder': 'true',
       ...(options.headers as Record<string, string>),
     };
 
@@ -355,6 +356,36 @@ export async function reportSuspect(data: {
     status: string;
     createdAt: string;
   }>('/agent/report-suspect', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+// ==================== TRANSFER ====================
+
+export async function createTransfer(data: {
+  recipientPhone: string;
+  amount: number;
+  description?: string;
+}) {
+  return request<{
+    transaction: {
+      id: string;
+      type: string;
+      amount: number;
+      fees: number;
+      netAmount: number;
+      status: string;
+      reference: string;
+      description: string;
+      createdAt: string;
+    };
+    recipient: {
+      id: string;
+      name: string | null;
+      phone: string;
+    };
+  }>('/transfer', {
     method: 'POST',
     body: JSON.stringify(data),
   });

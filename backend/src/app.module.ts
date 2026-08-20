@@ -13,6 +13,7 @@ import { MerchantModule } from './merchant/merchant.module';
 import { RefundModule } from './refund/refund.module';
 import { ExternalApiModule } from './external-api/external-api.module';
 import { AutomationModule } from './automation/automation.module';
+import { TransferModule } from './transfer/transfer.module';
 import { AccessLogInterceptor } from './auth/access-log.interceptor';
 
 @Module({
@@ -32,6 +33,7 @@ import { AccessLogInterceptor } from './auth/access-log.interceptor';
     RefundModule,
     ExternalApiModule,
     AutomationModule,
+    TransferModule,
   ],
   providers: [
     { provide: APP_INTERCEPTOR, useClass: AccessLogInterceptor },

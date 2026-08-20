@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Contacts from 'expo-contacts';
 import { Colors } from '../../src/theme/colors';
-import { verifyPin } from '../../src/api/client';
+import { verifyPin, createTransfer, getMe } from '../../src/api/client';
 
 interface ContactItem {
   id: string;
@@ -20,6 +20,7 @@ interface ContactItem {
 export default function TransfertScreen() {
   const router = useRouter();
   const [beneficiary, setBeneficiary] = useState('');
+  const [recipientPhone, setRecipientPhone] = useState('');
   const [amount, setAmount] = useState('');
   const [payFees, setPayFees] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,19 +74,50 @@ export default function TransfertScreen() {
 
   const selectContact = (contact: ContactItem) => {
     setBeneficiary(`${contact.name} — ${contact.phone}`);
+    setRecipientPhone(contact.phone);
     setShowContacts(false);
     setContactSearch('');
   };
 
   const executeTransfer = async () => {
+    const phone = extractPhone(beneficiary);
+    if (!phone) {
+      setLoading(false);
+      setShowPinModal(false);
+      setPin('');
+      Alert.alert('Erreur', 'Numéro de bénéficiaire invalide.');
+      return;
+    }
+
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 1500));
+    const result = await createTransfer({
+      recipientPhone: phone,
+      amount: parseFloat(amount),
+    });
     setLoading(false);
     setShowPinModal(false);
     setPin('');
-    Alert.alert('Succès', 'Transfert enregistré. En attente de confirmation backend.', [
-      { text: 'OK', onPress: () => router.back() },
-    ]);
+
+    if (result.error) {
+      Alert.alert('Erreur', result.error);
+      return;
+    }
+
+    Alert.alert(
+      'Succès',
+      `Transfert de ${parseFloat(amount).toLocaleString('fr-FR')} FCFA effectué à ${result.data?.recipient.name || result.data?.recipient.phone}.\nRéférence: ${result.data?.transaction.reference}`,
+      [{ text: 'OK', onPress: () => router.back() }],
+    );
+  };
+
+  const extractPhone = (input: string): string | null => {
+    const separatorIndex = input.indexOf(' — ');
+    if (separatorIndex !== -1) {
+      const phone = input.substring(separatorIndex + 3).trim();
+      return phone.match(/^\+[1-9]\d{6,14}$/) ? phone : null;
+    }
+    const cleaned = input.trim();
+    return cleaned.match(/^\+[1-9]\d{6,14}$/) ? cleaned : null;
   };
 
   const authenticateAndTransfer = async () => {
@@ -118,7 +150,14 @@ export default function TransfertScreen() {
     }
 
     setPinLoading(true);
-    const result = await verifyPin('+2250700000000', pin);
+    const me = await getMe();
+    if (me.error || !me.data) {
+      setPinLoading(false);
+      Alert.alert('Erreur', 'Impossible de récupérer vos informations. Reconnectez-vous.');
+      return;
+    }
+
+    const result = await verifyPin(me.data.phone, pin);
     setPinLoading(false);
 
     if (result.error) {
@@ -135,6 +174,13 @@ export default function TransfertScreen() {
       Alert.alert('Erreur', 'Veuillez saisir le bénéficiaire.');
       return;
     }
+
+    const phone = extractPhone(beneficiary);
+    if (!phone) {
+      Alert.alert('Erreur', 'Numéro de téléphone invalide. Sélectionnez un contact ou saisissez un numéro au format international (ex: +2250701020304).');
+      return;
+    }
+
     const num = parseFloat(amount);
     if (isNaN(num) || num <= 0) {
       Alert.alert('Erreur', 'Veuillez saisir un montant valide.');

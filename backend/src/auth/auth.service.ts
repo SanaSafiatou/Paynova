@@ -369,6 +369,64 @@ export class AuthService {
     };
   }
 
+  async verifyPin(dto: VerifyPinDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone: dto.phone },
+    });
+
+    if (!user) {
+      throw new NotFoundException('Aucun compte trouvé avec ce numéro');
+    }
+
+    if (!user.pinHash) {
+      throw new BadRequestException('Aucun code PIN défini');
+    }
+
+    if (user.pinLockedUntil && user.pinLockedUntil > new Date()) {
+      throw new ForbiddenException(
+        'Trop de tentatives échouées. Veuillez réessayer plus tard.',
+      );
+    }
+
+    const valid = await bcrypt.compare(dto.pin, user.pinHash);
+
+    if (!valid) {
+      const newAttempts = user.pinAttempts + 1;
+      const updateData: {
+        pinAttempts: number;
+        pinLockedUntil?: Date | null;
+      } = { pinAttempts: newAttempts };
+
+      if (newAttempts >= PIN_MAX_ATTEMPTS) {
+        updateData.pinLockedUntil = new Date(
+          Date.now() + PIN_LOCKOUT_SECONDS * 1000,
+        );
+        updateData.pinAttempts = 0;
+      }
+
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: updateData,
+      });
+
+      throw new ForbiddenException('Code PIN incorrect');
+    }
+
+    if (user.pinAttempts > 0) {
+      await this.prisma.user.update({
+        where: { id: user.id },
+        data: { pinAttempts: 0, pinLockedUntil: null },
+      });
+    }
+
+    return {
+      message: 'PIN vérifié',
+      userId: user.id,
+      phone: user.phone,
+      role: user.role,
+    };
+  }
+
   private generateOtp(): string {
     return Math.floor(100000 + Math.random() * 900000).toString();
   }
